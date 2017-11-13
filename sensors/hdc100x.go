@@ -1,44 +1,38 @@
 package sensors
 
-type HDC100xSensor struct {
-	device iioDevice
+import "github.com/sensebox/senseboxpi/sensors/iio"
+
+func NewHDC100xSensor() (SensorDevice, error) {
+	device, err := iio.DeviceByName("1-0043")
+	if err != nil {
+		return SensorDevice{}, err
+	}
+
+	return SensorDevice{device}, nil
 }
 
-func NewHDC100xSensor(device iioDevice) HDC100xSensor {
-	return HDC100xSensor{device: device}
-}
-
-func (s *HDC100xSensor) TemperatureHumidity() (temperature, humidity float64, err error) {
-	temperature, err = s.Temperature()
+func (s *SensorDevice) HDC100xTemperatureHumidity() (temperature, humidity float64, err error) {
+	temperature, err = s.HDC100xTemperature()
 	if err != nil {
 		return
 	}
-	humidity, err = s.Humidity()
+	humidity, err = s.HDC100xHumidity()
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (s *HDC100xSensor) temperatureDatasheet() (temperature float64, err error) {
-	tempRaw, err := s.device.readFloat("in_temp_raw")
+func (s *SensorDevice) HDC100xTemperature() (temperature float64, err error) {
+	tempRaw, err := s.device.ReadFloat("in_temp_raw")
 	if err != nil {
 		return
 	}
-	temperature = (tempRaw/65536.0)*165.0 - 40.0
-	return
-}
-
-func (s *HDC100xSensor) temperatureComputed() (temperature float64, err error) {
-	tempRaw, err := s.device.readFloat("in_temp_raw")
+	offset, err := s.device.ReadFloat("in_temp_offset")
 	if err != nil {
 		return
 	}
-	offset, err := s.device.readFloat("in_temp_offset")
-	if err != nil {
-		return
-	}
-	scale, err := s.device.readFloat("in_temp_scale")
+	scale, err := s.device.ReadFloat("in_temp_scale")
 	if err != nil {
 		return
 	}
@@ -47,40 +41,15 @@ func (s *HDC100xSensor) temperatureComputed() (temperature float64, err error) {
 	return
 }
 
-func (s *HDC100xSensor) Temperature() (temperature float64, err error) {
-	temperature, err = s.temperatureComputed()
+func (s *SensorDevice) HDC100xHumidity() (humidity float64, err error) {
+	humiRaw, err := s.device.ReadFloat("in_humidityrelative_raw")
 	if err != nil {
 		return
 	}
-	return
-}
-
-func (s *HDC100xSensor) humidityDatasheet() (humidity float64, err error) {
-	humiRaw, err := s.device.readFloat("in_humidityrelative_raw")
-	if err != nil {
-		return
-	}
-	humidity = (humiRaw / 65536.0) * 100.0
-	return
-}
-
-func (s *HDC100xSensor) humidityComputed() (humidity float64, err error) {
-	humiRaw, err := s.device.readFloat("in_humidityrelative_raw")
-	if err != nil {
-		return
-	}
-	scale, err := s.device.readFloat("in_humidityrelative_scale")
+	scale, err := s.device.ReadFloat("in_humidityrelative_scale")
 	if err != nil {
 		return
 	}
 	humidity = humiRaw * scale
-	return
-}
-
-func (s *HDC100xSensor) Humidity() (humidity float64, err error) {
-	humidity, err = s.humidityComputed()
-	if err != nil {
-		return
-	}
 	return
 }

@@ -9,46 +9,43 @@ import (
 )
 
 var (
-	hdc1008  sensors.HDC100xSensor
-	tsl45315 sensors.TSL4531Sensor
-	veml6070 sensors.VEML6070Sensor
-	bmp280   sensors.BMP280Sensor
+	hdc1008, tsl45315, veml6070, bmp280 sensors.SensorDevice
 )
 
-func initSensors() {
-	devices, err := sensors.ReadDevices()
+func initSensors() (err error) {
+	hdc1008, err = sensors.NewHDC100xSensor()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-
-	for _, device := range devices {
-		switch device.Name {
-		case "1-0043":
-			hdc1008 = sensors.NewHDC100xSensor(device)
-		case "tsl4531":
-			tsl45315 = sensors.NewTSL4531Sensor(device)
-		case "veml6070":
-			veml6070 = sensors.NewVEML6070Sensor(device)
-		case "bmp280":
-			bmp280 = sensors.NewBMP280Sensor(device)
-		}
+	tsl45315, err = sensors.NewTSL4531Sensor()
+	if err != nil {
+		return
 	}
+	veml6070, err = sensors.NewVEML6070Sensor()
+	if err != nil {
+		return
+	}
+	bmp280, err = sensors.NewBMP280Sensor()
+	if err != nil {
+		return
+	}
+	return nil
 }
 
 func readSensors() (temperature, humidity, lux, uv, pressure float64, err error) {
-	temperature, humidity, err = hdc1008.TemperatureHumidity()
+	temperature, humidity, err = hdc1008.HDC100xTemperatureHumidity()
 	if err != nil {
 		return
 	}
-	lux, err = tsl45315.Lux()
+	lux, err = tsl45315.TSL4531Lux()
 	if err != nil {
 		return
 	}
-	uv, err = veml6070.UV()
+	uv, err = veml6070.VEML6070UV()
 	if err != nil {
 		return
 	}
-	pressure, err = bmp280.Pressure()
+	pressure, err = bmp280.BMP280Pressure()
 	if err != nil {
 		return
 	}
@@ -56,10 +53,16 @@ func readSensors() (temperature, humidity, lux, uv, pressure float64, err error)
 }
 
 func main() {
-	api := sensebox.NewAPIConnection("hallo")
+	api, err := sensebox.NewAPIConnection("57fb712811347b0011c10e80")
+	if err != nil {
+		log.Fatal(err)
+	}
 	api.FetchBox()
 
-	initSensors()
+	err = initSensors()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	temperature, humidity, lux, uv, pressure, err := readSensors()
 	if err != nil {
