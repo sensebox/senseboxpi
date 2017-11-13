@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/sensebox/senseboxpi/sensebox"
 	"github.com/sensebox/senseboxpi/sensors"
 )
 
 var (
 	hdc1008  sensors.HDC100xSensor
-	tsl4531  sensors.TSL4531Sensor
+	tsl45315 sensors.TSL4531Sensor
 	veml6070 sensors.VEML6070Sensor
 	bmp280   sensors.BMP280Sensor
 )
@@ -25,7 +26,7 @@ func initSensors() {
 		case "1-0043":
 			hdc1008 = sensors.NewHDC100xSensor(device)
 		case "tsl4531":
-			tsl4531 = sensors.NewTSL4531Sensor(device)
+			tsl45315 = sensors.NewTSL4531Sensor(device)
 		case "veml6070":
 			veml6070 = sensors.NewVEML6070Sensor(device)
 		case "bmp280":
@@ -39,7 +40,7 @@ func readSensors() (temperature, humidity, lux, uv, pressure float64, err error)
 	if err != nil {
 		return
 	}
-	lux, err = tsl4531.Lux()
+	lux, err = tsl45315.Lux()
 	if err != nil {
 		return
 	}
@@ -55,6 +56,9 @@ func readSensors() (temperature, humidity, lux, uv, pressure float64, err error)
 }
 
 func main() {
+	api := sensebox.NewAPIConnection("hallo")
+	api.FetchBox()
+
 	initSensors()
 
 	temperature, humidity, lux, uv, pressure, err := readSensors()
