@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/sensebox/senseboxpi/sensebox"
 	"github.com/sensebox/senseboxpi/sensors"
 )
 
 var (
-	hdc1008, tsl45315, veml6070, bmp280 sensors.SensorDevice
+	hdc1008, tsl45315, veml6070, bmp280         sensors.SensorDevice
+	hdcSensor, tslSensor, vemlSensor, bmpSensor sensebox.SenseBoxSensor
 )
 
 func initSensors() (err error) {
@@ -52,14 +54,26 @@ func readSensors() (temperature, humidity, lux, uv, pressure float64, err error)
 	return
 }
 
+func initSenseBox() (sensebox.SenseBox, error) {
+	hdcSensor = sensebox.SenseBoxSensor{ID: "", Sensor: hdc1008}
+	tslSensor = sensebox.SenseBoxSensor{ID: "", Sensor: tsl45315}
+	vemlSensor = sensebox.SenseBoxSensor{ID: "", Sensor: veml6070}
+	bmpSensor = sensebox.SenseBoxSensor{ID: "", Sensor: bmp280}
+
+	box, err := sensebox.NewSenseBox("", hdcSensor, tslSensor, vemlSensor, bmpSensor)
+	if err != nil {
+		return sensebox.SenseBox{}, err
+	}
+	return box, nil
+}
+
 func main() {
-	api, err := sensebox.NewAPIConnection("57fb712811347b0011c10e80")
+	err := initSensors()
 	if err != nil {
 		log.Fatal(err)
 	}
-	api.FetchBox()
 
-	err = initSensors()
+	senseBox, err := initSenseBox()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,5 +87,9 @@ func main() {
 	fmt.Println(pressure)
 	fmt.Println(lux)
 	fmt.Println(uv)
+
+	senseBox.AddMeasurement(&hdcSensor, temperature, time.Now())
+
+	senseBox.SubmitMeasurements()
 
 }
