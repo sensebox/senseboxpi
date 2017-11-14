@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/parnurzeal/gorequest"
-	"github.com/sensebox/senseboxpi/sensors"
 )
 
 const (
@@ -15,15 +14,13 @@ const (
 )
 
 type SenseBoxSensor struct {
-	ID     string `json:"_id"`
-	Sensor sensors.SensorDevice
-	box    *SenseBox
+	ID           string `json:"_id"`
+	measurements []measurement
 }
 
 type SenseBox struct {
-	ID           string           `json:"_id"`
-	Sensors      []SenseBoxSensor `json:"sensors"`
-	measurements []measurement
+	ID      string            `json:"_id"`
+	Sensors []*SenseBoxSensor `json:"sensors"`
 }
 
 type measurement struct {
@@ -49,34 +46,33 @@ func validateID(id string) (err error) {
 	return
 }
 
-func NewSenseBox(ID string, sensors ...SenseBoxSensor) (SenseBox, error) {
+func NewSenseBox(ID string, sensors ...*SenseBoxSensor) (SenseBox, error) {
 	err := validateID(ID)
 	if err != nil {
 		return SenseBox{}, errors.New("senseBoxID " + ID + " is invalid: " + err.Error())
 	}
 
-	box := SenseBox{ID: ID}
-
 	for _, sensor := range sensors {
 		err := validateID(sensor.ID)
-		sensor.box = &box
 		if err != nil {
 			return SenseBox{}, errors.New("Sensor ID " + sensor.ID + " is invalid: " + err.Error())
 		}
 	}
 
-	box.Sensors = sensors
-
-	return box, nil
+	return SenseBox{ID, sensors}, nil
 }
 
 func (s *SenseBoxSensor) AddMeasurement(value float64, timestamp time.Time) {
-	s.box.measurements = append(s.box.measurements, measurement{s, value, timestamp.UTC()})
+	s.measurements = append(s.measurements, measurement{s, value, timestamp.UTC()})
 }
 
 func (s *SenseBox) SubmitMeasurements() []error {
+	var measurements []measurement
+	for _, sensor := range s.Sensors {
+		measurements = append(measurements, sensor.measurements...)
+	}
 	resp, body, errs := gorequest.New().Post(baseURL + s.ID + "/data").
-		Send(s.measurements).
+		Send(measurements).
 		End()
 
 	if errs != nil {
