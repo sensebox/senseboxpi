@@ -3,18 +3,21 @@ package sensebox
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/parnurzeal/gorequest"
 	"github.com/sensebox/senseboxpi/sensors"
 )
 
 const (
-	baseURL = "https://api.osem.vo1d.space/boxes"
+	baseURL = "https://api.osem.vo1d.space/boxes/"
 )
 
 type SenseBoxSensor struct {
 	ID     string `json:"_id"`
 	Sensor sensors.SensorDevice
+	box    *SenseBox
 }
 
 type SenseBox struct {
@@ -24,9 +27,13 @@ type SenseBox struct {
 }
 
 type measurement struct {
-	sensor    string    `json:"sensor"`
-	value     float64   `json:"value"`
-	timestamp time.Time `json:"createdAt":omitempty`
+	Sensor    *SenseBoxSensor `json:"sensor"`
+	Value     float64         `json:"value"`
+	Timestamp time.Time       `json:"createdAt,omitempty"`
+}
+
+func (s SenseBoxSensor) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + s.ID + "\""), nil
 }
 
 func validateID(id string) (err error) {
@@ -48,20 +55,35 @@ func NewSenseBox(ID string, sensors ...SenseBoxSensor) (SenseBox, error) {
 		return SenseBox{}, errors.New("senseBoxID " + ID + " is invalid: " + err.Error())
 	}
 
+	box := SenseBox{ID: ID}
+
 	for _, sensor := range sensors {
 		err := validateID(sensor.ID)
+		sensor.box = &box
 		if err != nil {
 			return SenseBox{}, errors.New("Sensor ID " + sensor.ID + " is invalid: " + err.Error())
 		}
 	}
 
-	return SenseBox{ID: ID, Sensors: sensors}, nil
+	box.Sensors = sensors
+
+	return box, nil
 }
 
-func (s *SenseBox) AddMeasurement(sensor *SenseBoxSensor, value float64, timestamp time.Time) {
-	s.measurements = append(s.measurements, measurement{sensor.ID, value, timestamp})
+func (s *SenseBoxSensor) AddMeasurement(value float64, timestamp time.Time) {
+	s.box.measurements = append(s.box.measurements, measurement{s, value, timestamp.UTC()})
 }
 
-func (s *SenseBox) SubmitMeasurements() {
+func (s *SenseBox) SubmitMeasurements() []error {
+	resp, body, errs := gorequest.New().Post(baseURL + s.ID + "/data").
+		Send(s.measurements).
+		End()
 
+	if errs != nil {
+		return errs
+	}
+
+	fmt.Println(resp.Status, body)
+
+	return nil
 }

@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	hdc1008, tsl45315, veml6070, bmp280         sensors.SensorDevice
-	hdcSensor, tslSensor, vemlSensor, bmpSensor sensebox.SenseBoxSensor
+	hdc1008, tsl45315, veml6070, bmp280                       sensors.SensorDevice
+	tempSensor, humiSensor, lightSensor, uvSensor, presSensor sensebox.SenseBoxSensor
+	senseBox                                                  sensebox.SenseBox
 )
 
 func initSensors() (err error) {
@@ -39,28 +40,34 @@ func readSensors() (temperature, humidity, lux, uv, pressure float64, err error)
 	if err != nil {
 		return
 	}
+	tempSensor.AddMeasurement(temperature, time.Now())
+	humiSensor.AddMeasurement(humidity, time.Now())
 	lux, err = tsl45315.TSL4531Lux()
 	if err != nil {
 		return
 	}
+	lightSensor.AddMeasurement(lux, time.Now())
 	uv, err = veml6070.VEML6070UV()
 	if err != nil {
 		return
 	}
+	uvSensor.AddMeasurement(uv, time.Now())
 	pressure, err = bmp280.BMP280Pressure()
 	if err != nil {
 		return
 	}
+	presSensor.AddMeasurement(pressure, time.Now())
 	return
 }
 
 func initSenseBox() (sensebox.SenseBox, error) {
-	hdcSensor = sensebox.SenseBoxSensor{ID: "", Sensor: hdc1008}
-	tslSensor = sensebox.SenseBoxSensor{ID: "", Sensor: tsl45315}
-	vemlSensor = sensebox.SenseBoxSensor{ID: "", Sensor: veml6070}
-	bmpSensor = sensebox.SenseBoxSensor{ID: "", Sensor: bmp280}
+	tempSensor = sensebox.SenseBoxSensor{ID: "", Sensor: hdc1008}
+	humiSensor = sensebox.SenseBoxSensor{ID: "", Sensor: hdc1008}
+	lightSensor = sensebox.SenseBoxSensor{ID: "", Sensor: tsl45315}
+	uvSensor = sensebox.SenseBoxSensor{ID: "", Sensor: veml6070}
+	presSensor = sensebox.SenseBoxSensor{ID: "", Sensor: bmp280}
 
-	box, err := sensebox.NewSenseBox("", hdcSensor, tslSensor, vemlSensor, bmpSensor)
+	box, err := sensebox.NewSenseBox("", tempSensor, lightSensor, uvSensor, presSensor)
 	if err != nil {
 		return sensebox.SenseBox{}, err
 	}
@@ -73,7 +80,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	senseBox, err := initSenseBox()
+	senseBox, err = initSenseBox()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,14 +89,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(temperature)
-	fmt.Println(humidity)
+	fmt.Println(temperature, humidity)
 	fmt.Println(pressure)
 	fmt.Println(lux)
 	fmt.Println(uv)
 
-	senseBox.AddMeasurement(&hdcSensor, temperature, time.Now())
-
-	senseBox.SubmitMeasurements()
+	errs := senseBox.SubmitMeasurements()
+	if errs != nil {
+		log.Fatal(errs)
+	}
 
 }
