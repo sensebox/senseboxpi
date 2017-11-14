@@ -25,12 +25,18 @@ type SenseBox struct {
 
 type measurement struct {
 	Sensor    *SenseBoxSensor `json:"sensor"`
-	Value     float64         `json:"value"`
+	Value     Number          `json:"value"`
 	Timestamp time.Time       `json:"createdAt,omitempty"`
 }
 
 func (s SenseBoxSensor) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + s.ID + "\""), nil
+}
+
+type Number float64
+
+func (f Number) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%.2f", f)), nil
 }
 
 func validateID(id string) (err error) {
@@ -63,7 +69,7 @@ func NewSenseBox(ID string, sensors ...*SenseBoxSensor) (SenseBox, error) {
 }
 
 func (s *SenseBoxSensor) AddMeasurement(value float64, timestamp time.Time) {
-	s.measurements = append(s.measurements, measurement{s, value, timestamp.UTC()})
+	s.measurements = append(s.measurements, measurement{s, Number(value), timestamp.UTC()})
 }
 
 func (s *SenseBox) SubmitMeasurements() []error {
