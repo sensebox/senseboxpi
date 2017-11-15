@@ -76,6 +76,8 @@ func (s *SenseBox) SubmitMeasurements() []error {
 	var measurements []measurement
 	for _, sensor := range s.Sensors {
 		measurements = append(measurements, sensor.measurements...)
+		// clear measurements
+		sensor.measurements = nil
 	}
 	resp, body, errs := gorequest.New().Post(baseURL + s.ID + "/data").
 		Send(measurements).
