@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/parnurzeal/gorequest"
@@ -39,7 +40,7 @@ func (s Sensor) MarshalJSON() ([]byte, error) {
 type number float64
 
 func (f number) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%.2f", f)), nil
+	return []byte(strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", f), "0"), ".")), nil
 }
 
 func validateID(id string) (err error) {
