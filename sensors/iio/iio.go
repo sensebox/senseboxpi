@@ -9,10 +9,12 @@ import (
 
 const iioDir = "/sys/bus/iio/devices/"
 
+// Device is a Industrial I/O device
 type Device struct {
 	path string
 }
 
+// Read reads a value from the specified filename
 func (d Device) Read(filename string) (result string, err error) {
 	resultBytes, err := ioutil.ReadFile(d.path + "/" + filename)
 	if err != nil {
@@ -22,6 +24,7 @@ func (d Device) Read(filename string) (result string, err error) {
 	return
 }
 
+// ReadFloat reads a float64 from the specified filename
 func (d Device) ReadFloat(filename string) (result float64, err error) {
 	resultStr, err := d.Read(filename)
 	if err != nil {
@@ -31,6 +34,7 @@ func (d Device) ReadFloat(filename string) (result float64, err error) {
 	return
 }
 
+// Name reads the name of the Device from the "name" file
 func (d Device) Name() (name string, err error) {
 	name, err = d.Read("name")
 	if err != nil {
@@ -70,18 +74,7 @@ func DeviceByName(name string) (Device, error) {
 		if deviceName == name {
 			return device, nil
 		}
-		//switch device.Name {
-		//case "1-0043":
-		//	hdc1008 = sensors.NewHDC100xSensor(device)
-		//case "tsl4531":
-		//	tsl45315 = sensors.NewTSL4531Sensor(device)
-		//case "veml6070":
-		//	veml6070 = sensors.NewVEML6070Sensor(device)
-		//case "bmp280":
-		//	bmp280 = sensors.NewBMP280Sensor(device)
-		//}
 	}
 
 	return Device{}, errors.New("no device with name " + name + "availiable")
-
 }

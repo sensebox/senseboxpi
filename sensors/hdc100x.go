@@ -2,6 +2,7 @@ package sensors
 
 import "github.com/sensebox/senseboxpi/sensors/iio"
 
+// NewHDC100xSensor initializes a new SensorDevice of type HDC100x
 func NewHDC100xSensor() (SensorDevice, error) {
 	device, err := iio.DeviceByName("1-0043")
 	if err != nil {
@@ -11,6 +12,8 @@ func NewHDC100xSensor() (SensorDevice, error) {
 	return SensorDevice{device}, nil
 }
 
+// HDC100xTemperatureHumidity reads and returns the current temperature in degree celsius
+// and relative humidity in percent
 func (s *SensorDevice) HDC100xTemperatureHumidity() (temperature, humidity float64, err error) {
 	temperature, err = s.HDC100xTemperature()
 	if err != nil {
@@ -23,6 +26,7 @@ func (s *SensorDevice) HDC100xTemperatureHumidity() (temperature, humidity float
 	return
 }
 
+// HDC100xTemperature reads and returns the current temperature in degrees celsius
 func (s *SensorDevice) HDC100xTemperature() (temperature float64, err error) {
 	tempRaw, err := s.device.ReadFloat("in_temp_raw")
 	if err != nil {
@@ -41,6 +45,7 @@ func (s *SensorDevice) HDC100xTemperature() (temperature float64, err error) {
 	return
 }
 
+// HDC100xHumidity reads and returns the current relative humidity in percent
 func (s *SensorDevice) HDC100xHumidity() (humidity float64, err error) {
 	humiRaw, err := s.device.ReadFloat("in_humidityrelative_raw")
 	if err != nil {

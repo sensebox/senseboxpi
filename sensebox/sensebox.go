@@ -13,29 +13,32 @@ const (
 	baseURL = "https://api.osem.vo1d.space/boxes/"
 )
 
-type SenseBoxSensor struct {
+// A Sensor of a SenseBox
+type Sensor struct {
 	ID           string `json:"_id"`
 	measurements []measurement
 }
 
+// SenseBox has an ID and Sensors
 type SenseBox struct {
-	ID      string            `json:"_id"`
-	Sensors []*SenseBoxSensor `json:"sensors"`
+	ID      string    `json:"_id"`
+	Sensors []*Sensor `json:"sensors"`
 }
 
 type measurement struct {
-	Sensor    *SenseBoxSensor `json:"sensor"`
-	Value     Number          `json:"value"`
-	Timestamp time.Time       `json:"createdAt,omitempty"`
+	Sensor    *Sensor   `json:"sensor"`
+	Value     number    `json:"value"`
+	Timestamp time.Time `json:"createdAt,omitempty"`
 }
 
-func (s SenseBoxSensor) MarshalJSON() ([]byte, error) {
+// MarshalJSON of a Sensor returns the ID of the sensor
+func (s Sensor) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + s.ID + "\""), nil
 }
 
-type Number float64
+type number float64
 
-func (f Number) MarshalJSON() ([]byte, error) {
+func (f number) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%.2f", f)), nil
 }
 
@@ -52,7 +55,10 @@ func validateID(id string) (err error) {
 	return
 }
 
-func NewSenseBox(ID string, sensors ...*SenseBoxSensor) (SenseBox, error) {
+// NewSenseBox initializes a SenseBox. It takes the ID and multiple Sensors
+// as parameters.
+// It validates the ID and also the IDs of the sensors
+func NewSenseBox(ID string, sensors ...*Sensor) (SenseBox, error) {
 	err := validateID(ID)
 	if err != nil {
 		return SenseBox{}, errors.New("senseBoxID " + ID + " is invalid: " + err.Error())
@@ -68,10 +74,13 @@ func NewSenseBox(ID string, sensors ...*SenseBoxSensor) (SenseBox, error) {
 	return SenseBox{ID, sensors}, nil
 }
 
-func (s *SenseBoxSensor) AddMeasurement(value float64, timestamp time.Time) {
-	s.measurements = append(s.measurements, measurement{s, Number(value), timestamp.UTC()})
+// AddMeasurement adds a new measurement to the Sensor
+func (s *Sensor) AddMeasurement(value float64, timestamp time.Time) {
+	s.measurements = append(s.measurements, measurement{s, number(value), timestamp.UTC()})
 }
 
+// SubmitMeasurements tries to send the measurements of the Sensors of the SenseBox
+// to the openSenseMap
 func (s *SenseBox) SubmitMeasurements() []error {
 	var measurements []measurement
 	for _, sensor := range s.Sensors {
