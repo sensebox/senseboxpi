@@ -8,12 +8,16 @@ import (
 	"github.com/sensebox/senseboxpi/sensors"
 )
 
+var (
+	tempSensor, humiSensor, lightSensor, uvSensor, presSensor sensebox.Sensor
+)
+
 func initSenseBox() (sensebox.SenseBox, error) {
-	tempSensor := sensebox.Sensor{ID: ""}
-	humiSensor := sensebox.Sensor{ID: ""}
-	lightSensor := sensebox.Sensor{ID: ""}
-	uvSensor := sensebox.Sensor{ID: ""}
-	presSensor := sensebox.Sensor{ID: ""}
+	tempSensor = sensebox.Sensor{ID: ""}
+	humiSensor = sensebox.Sensor{ID: ""}
+	presSensor = sensebox.Sensor{ID: ""}
+	lightSensor = sensebox.Sensor{ID: ""}
+	uvSensor = sensebox.Sensor{ID: ""}
 
 	box, err := sensebox.NewSenseBox("", &tempSensor, &humiSensor, &lightSensor, &uvSensor, &presSensor)
 	if err != nil {
@@ -23,9 +27,6 @@ func initSenseBox() (sensebox.SenseBox, error) {
 }
 
 func main() {
-	var (
-		tempSensor, humiSensor, lightSensor, uvSensor, presSensor sensebox.Sensor
-	)
 
 	hdc1008, tsl45315, veml6070, bmp280, err := initSensors()
 	if err != nil {
