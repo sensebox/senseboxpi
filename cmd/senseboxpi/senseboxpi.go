@@ -10,6 +10,9 @@ import (
 
 func main() {
 	configBytes, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	senseBox, err := sensebox.NewFromJSON(configBytes)
 	if err != nil {
