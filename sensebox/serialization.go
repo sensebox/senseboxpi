@@ -16,13 +16,13 @@ func (f number) MarshalJSON() ([]byte, error) {
 	return []byte(strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", f), "0"), ".")), nil
 }
 
-func (i id) UnmarshalJSON(jsonBytes []byte) error {
+func (i *id) UnmarshalJSON(jsonBytes []byte) error {
 	rawID := string(jsonBytes[1 : len(jsonBytes)-1])
 	if err := validateID(rawID); err != nil {
 		return err
 	}
 
-	i = id(rawID)
+	*i = id(rawID)
 
 	return nil
 }
