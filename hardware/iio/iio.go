@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"github.com/sensebox/senseboxpi/hardware"
 )
 
 const iioDir = "/sys/bus/iio/devices/"
@@ -14,7 +16,7 @@ type Device struct {
 	path string
 }
 
-// Read reads a value from the specified filename
+// Read reads a value from the specified filenamehardware.
 func (d Device) Read(filename string) (result string, err error) {
 	resultBytes, err := ioutil.ReadFile(d.path + "/" + filename)
 	if err != nil {
@@ -43,26 +45,22 @@ func (d Device) Name() (name string, err error) {
 	return
 }
 
-var iioDevices []Device
-
 // Devices enumerates Industrial I/O devices located in /sys/bus/iio/devices/
-func Devices() ([]Device, error) {
-	if len(iioDevices) == 0 {
-		files, err := ioutil.ReadDir(iioDir)
-		if err != nil {
-			return nil, err
-		}
-		for _, file := range files {
-			d := Device{iioDir + file.Name()}
-			iioDevices = append(iioDevices, d)
-		}
-		return iioDevices, nil
+func Devices() ([]hardware.DeviceI, error) {
+	var iioDevices []hardware.DeviceI
+	files, err := ioutil.ReadDir(iioDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		d := Device{iioDir + file.Name()}
+		iioDevices = append(iioDevices, d)
 	}
 	return iioDevices, nil
 }
 
 // DeviceByName finds the device with the specified name in /sys/bus/iio/devices/
-func DeviceByName(name string) (Device, error) {
+func DeviceByName(name string) (hardware.DeviceI, error) {
 	devices, err := Devices()
 	if err != nil {
 		return Device{}, err
@@ -76,5 +74,5 @@ func DeviceByName(name string) (Device, error) {
 		}
 	}
 
-	return Device{}, errors.New("no device with name " + name + "availiable")
+	return Device{}, errors.New("no iio device with name " + name + "availiable")
 }

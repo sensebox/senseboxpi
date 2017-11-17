@@ -2,10 +2,9 @@ package sensebox
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
@@ -14,33 +13,11 @@ const (
 	baseURL = "https://api.osem.vo1d.space/boxes/"
 )
 
-// A Sensor of a SenseBox
-type Sensor struct {
-	ID           string `json:"_id"`
-	measurements []measurement
-}
+type id string
 
-// SenseBox has an ID and Sensors
-type SenseBox struct {
-	ID      string    `json:"_id"`
-	Sensors []*Sensor `json:"sensors"`
-}
-
-type measurement struct {
-	Sensor    *Sensor   `json:"sensor"`
-	Value     number    `json:"value"`
-	Timestamp time.Time `json:"createdAt,omitempty"`
-}
-
-// MarshalJSON of a Sensor returns the ID of the sensor
-func (s Sensor) MarshalJSON() ([]byte, error) {
-	return []byte("\"" + s.ID + "\""), nil
-}
-
-type number float64
-
-func (f number) MarshalJSON() ([]byte, error) {
-	return []byte(strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", f), "0"), ".")), nil
+type senseBox struct {
+	ID      id        `json:"_id"`
+	Sensors []*sensor `json:"sensors"`
 }
 
 func validateID(id string) (err error) {
@@ -56,40 +33,26 @@ func validateID(id string) (err error) {
 	return
 }
 
-// NewSenseBox initializes a SenseBox. It takes the ID and multiple Sensors
-// as parameters.
-// It validates the ID and also the IDs of the sensors
-func NewSenseBox(ID string, sensors ...*Sensor) (SenseBox, error) {
-	err := validateID(ID)
+func NewFromJSON(jsonBytes []byte) (senseBox, error) {
+	var sbx senseBox
+	err := json.Unmarshal(jsonBytes, &sbx)
 	if err != nil {
-		return SenseBox{}, errors.New("senseBoxID " + ID + " is invalid: " + err.Error())
+		return senseBox{}, err
 	}
 
-	for _, sensor := range sensors {
-		err := validateID(sensor.ID)
-		if err != nil {
-			return SenseBox{}, errors.New("Sensor ID " + sensor.ID + " is invalid: " + err.Error())
-		}
-	}
-
-	return SenseBox{ID, sensors}, nil
-}
-
-// AddMeasurement adds a new measurement to the Sensor
-func (s *Sensor) AddMeasurement(value float64, timestamp time.Time) {
-	s.measurements = append(s.measurements, measurement{s, number(value), timestamp.UTC()})
+	return sbx, nil
 }
 
 // SubmitMeasurements tries to send the measurements of the Sensors of the SenseBox
 // to the openSenseMap
-func (s *SenseBox) SubmitMeasurements() []error {
+func (s *senseBox) SubmitMeasurements() []error {
 	var measurements []measurement
 	for _, sensor := range s.Sensors {
 		measurements = append(measurements, sensor.measurements...)
 		// clear measurements
 		sensor.measurements = nil
 	}
-	resp, body, errs := gorequest.New().Post(baseURL + s.ID + "/data").
+	resp, body, errs := gorequest.New().Post(baseURL + string(s.ID) + "/data").
 		Send(measurements).
 		End()
 
@@ -100,4 +63,14 @@ func (s *SenseBox) SubmitMeasurements() []error {
 	fmt.Println(resp.Status, body)
 
 	return nil
+}
+
+func (s *senseBox) ReadSensorsAndSubmitMeasurements() []error {
+	for _, sensor := range s.Sensors {
+		if err := sensor.AddMeasurementReading(); err != nil {
+			return []error{err}
+		}
+	}
+
+	return s.SubmitMeasurements()
 }

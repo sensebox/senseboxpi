@@ -1,13 +1,34 @@
 package sensors
 
-// HardwareDeviceI is a interface for all sorts of hardware sensors
-type HardwareDeviceI interface {
-	Read(string) (string, error)
-	ReadFloat(string) (float64, error)
-	Name() (string, error)
+import "errors"
+
+type SensorI interface {
+	Phenomenons() []string
+	ReadValue(string) (float64, error)
 }
 
-// SensorDevice wraps a device implementing the HardwareDeviceI interface
-type SensorDevice struct {
-	device HardwareDeviceI
+type fn func() (SensorI, error)
+
+var initMap = map[string]fn{
+	"bmp280":   NewBMP280Sensor,
+	"hdc1008":  NewHDC100xSensor,
+	"tsl45315": NewTSL4531Sensor,
+	"veml6070": NewVEML6070Sensor,
+}
+
+func NewSensor(sensorType, phenomenon string) (SensorI, error) {
+	if initFunc, ok := initMap[sensorType]; ok {
+		sensor, err := initFunc()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, sensorPhenomenon := range sensor.Phenomenons() {
+			if sensorPhenomenon == phenomenon {
+				return sensor, nil
+			}
+		}
+	}
+
+	return nil, errors.New("no hardware for sensorType \"" + sensorType + "\" and phenomenon \"" + phenomenon + "\" found")
 }

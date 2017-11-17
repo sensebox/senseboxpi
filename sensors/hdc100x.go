@@ -1,25 +1,34 @@
 package sensors
 
-import "github.com/sensebox/senseboxpi/sensors/iio"
+import (
+	"errors"
 
-// NewHDC100xSensor initializes a new SensorDevice of type HDC100x
-func NewHDC100xSensor() (SensorDevice, error) {
-	device, err := iio.DeviceByName("1-0043")
-	if err != nil {
-		return SensorDevice{}, err
-	}
+	"github.com/sensebox/senseboxpi/hardware"
+	"github.com/sensebox/senseboxpi/hardware/iio"
+)
 
-	return SensorDevice{device}, nil
+type HDC100x struct {
+	device hardware.DeviceI
 }
 
-// HDC100xTemperatureHumidity reads and returns the current temperature in degree celsius
+// NewHDC100xSensor initializes a new SensorDevice of type HDC100x
+func NewHDC100xSensor() (SensorI, error) {
+	device, err := iio.DeviceByName("1-0043")
+	if err != nil {
+		return HDC100x{}, err
+	}
+
+	return HDC100x{device}, nil
+}
+
+// TemperatureHumidity reads and returns the current temperature in degree celsius
 // and relative humidity in percent
-func (s *SensorDevice) HDC100xTemperatureHumidity() (temperature, humidity float64, err error) {
-	temperature, err = s.HDC100xTemperature()
+func (h HDC100x) TemperatureHumidity() (temperature, humidity float64, err error) {
+	temperature, err = h.Temperature()
 	if err != nil {
 		return
 	}
-	humidity, err = s.HDC100xHumidity()
+	humidity, err = h.Humidity()
 	if err != nil {
 		return
 	}
@@ -27,16 +36,16 @@ func (s *SensorDevice) HDC100xTemperatureHumidity() (temperature, humidity float
 }
 
 // HDC100xTemperature reads and returns the current temperature in degrees celsius
-func (s *SensorDevice) HDC100xTemperature() (temperature float64, err error) {
-	tempRaw, err := s.device.ReadFloat("in_temp_raw")
+func (h HDC100x) Temperature() (temperature float64, err error) {
+	tempRaw, err := h.device.ReadFloat("in_temp_raw")
 	if err != nil {
 		return
 	}
-	offset, err := s.device.ReadFloat("in_temp_offset")
+	offset, err := h.device.ReadFloat("in_temp_offset")
 	if err != nil {
 		return
 	}
-	scale, err := s.device.ReadFloat("in_temp_scale")
+	scale, err := h.device.ReadFloat("in_temp_scale")
 	if err != nil {
 		return
 	}
@@ -45,16 +54,37 @@ func (s *SensorDevice) HDC100xTemperature() (temperature float64, err error) {
 	return
 }
 
-// HDC100xHumidity reads and returns the current relative humidity in percent
-func (s *SensorDevice) HDC100xHumidity() (humidity float64, err error) {
-	humiRaw, err := s.device.ReadFloat("in_humidityrelative_raw")
+// HDC100x reads and returns the current relative humidity in percent
+func (h HDC100x) Humidity() (humidity float64, err error) {
+	humiRaw, err := h.device.ReadFloat("in_humidityrelative_raw")
 	if err != nil {
 		return
 	}
-	scale, err := s.device.ReadFloat("in_humidityrelative_scale")
+	scale, err := h.device.ReadFloat("in_humidityrelative_scale")
 	if err != nil {
 		return
 	}
 	humidity = humiRaw * scale
 	return
+}
+
+// Phenomenons returns "temperature" and "humidity" for this sensor
+func (h HDC100x) Phenomenons() []string {
+	return []string{"temperature", "humidity"}
+}
+
+// ReadValue reads and returns the current atmospheric pressure in hPa
+func (h HDC100x) ReadValue(phenomenon string) (float64, error) {
+	temperature, humidity, err := h.TemperatureHumidity()
+	if err != nil {
+		return 0, err
+	}
+	switch phenomenon {
+	case "temperature":
+		return temperature, nil
+	case "humidity":
+		return humidity, nil
+	}
+
+	return 0, errors.New("invalid phenomenon")
 }
