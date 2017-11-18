@@ -29,7 +29,7 @@ Check if the iio devices are populated `$ ls /sys/bus/iio/devices/`. If the outp
 
 Install [Go](https://golang.org/doc/install), then
 
- `$ go get -u github.com/sensebox/senseboxpi`
+ `$ go get -u github.com/sensebox/senseboxpi/cmd/senseboxpi`
 
 ## Running
 
