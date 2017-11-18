@@ -27,6 +27,17 @@ Check if the iio devices are populated `$ ls /sys/bus/iio/devices/`. If the outp
 
 ## Installation
 
+### Precompiled
+
+#### v1.0.0
+```
+curl -L https://github.com/sensebox/senseboxpi/releases/download/v1.0.0/senseboxpi-v1.0.0 > /tmp/senseboxpi &&
+    chmod +x /tmp/senseboxpi &&
+    sudo cp /tmp/senseboxpi /usr/local/bin/senseboxpi
+```
+
+### From source
+
 Install [Go](https://golang.org/doc/install), then
 
  `$ go get -u github.com/sensebox/senseboxpi/cmd/senseboxpi`
