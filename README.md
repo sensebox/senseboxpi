@@ -2,7 +2,7 @@
 
 Use this to read and submit sensor values from sensors attached to a Raspberry Pi.
 
-Measurements are read directly through sysfs filed provided by the drivers included in the Industrial I/O kernel subsystem.
+Measurements are read directly through sysfs files provided by the drivers included in the Industrial I/O kernel subsystem.
 
 Tested with Raspbian Strech Lite with Kernel 4.9.60. Kernel Versions below 4.9.60 lack the needed driver modules.
 
