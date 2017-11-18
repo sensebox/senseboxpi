@@ -33,8 +33,18 @@ Install [Go](https://golang.org/doc/install), then
 
 ## Running
 
-Create a json file called `senseboxpi_config.json` next to the `senseboxpi` binary.
+`senseboxpi` reads its configuration from a json file. By default, it expects a json file called `senseboxpi_config.json` next to the `senseboxpi` binary.
 
+### Commandline flags
+```
+Usage of ./senseboxpi-arm:
+  -c string
+      path of the configuration json (shorthand) (default "senseboxpi_config.json")
+  -config string
+      path of the configuration json (default "senseboxpi_config.json")
+```
+
+### Configuration JSON
 The root keys should be `_id`, `postDomain` with string values and `sensors` as array of objects. Each object in `sensors` has the keys `_id`, `sensorType` and `phenomenon` with string values.
 Here is an example:
 ```json
