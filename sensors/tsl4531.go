@@ -1,8 +1,14 @@
 package sensors
 
-import "github.com/sensebox/senseboxpi/hardware/iio"
-import "github.com/sensebox/senseboxpi/hardware"
+import (
+	"errors"
 
+	"github.com/sensebox/senseboxpi/hardware"
+	"github.com/sensebox/senseboxpi/hardware/iio"
+)
+
+// TSL4531 wraps the Industrial I/O sensor tsl4531. Selected by sensorType
+// "tsl4531" and phenomenon "temperature" or "lux"
 type TSL4531 struct {
 	device hardware.DeviceI
 }
@@ -17,7 +23,7 @@ func NewTSL4531Sensor() (SensorI, error) {
 	return TSL4531{device}, nil
 }
 
-// TSL4531Lux reads and returns the current light intensity in lux
+// Lux reads and returns the current light intensity in lux
 func (t TSL4531) Lux() (lux float64, err error) {
 	lux, err = t.device.ReadFloat("in_illuminance_raw")
 	if err != nil {
@@ -26,12 +32,22 @@ func (t TSL4531) Lux() (lux float64, err error) {
 	return
 }
 
-// Pheonomenons returns "bmp280_pressure" for this sensor
+// Phenomenons returns []string{"light"} for this sensor
 func (t TSL4531) Phenomenons() []string {
 	return []string{"light"}
 }
 
-// ReadValue reads and returns the current atmospheric pressure in hPa
+// ReadValue reads and returns the current light intensity in lux for phenomenon
+// "light"
 func (t TSL4531) ReadValue(phenomenon string) (float64, error) {
-	return t.Lux()
+	if phenomenon != "light" {
+		return 0, errors.New("invalid phenomenon " + phenomenon)
+	}
+
+	lux, err := t.Lux()
+	if err != nil {
+		return 0, err
+	}
+
+	return lux, nil
 }

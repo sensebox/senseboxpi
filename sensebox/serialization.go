@@ -12,10 +12,13 @@ func (s sensor) MarshalJSON() ([]byte, error) {
 
 type number float64
 
+// MarshalJSON of type number formats the float with two decimals and trims
+// excess zeroes and dots
 func (f number) MarshalJSON() ([]byte, error) {
 	return []byte(strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", f), "0"), ".")), nil
 }
 
+// UnmarshalJSON of type id checks the id for validity
 func (i *id) UnmarshalJSON(jsonBytes []byte) error {
 	rawID := string(jsonBytes[1 : len(jsonBytes)-1])
 	if err := validateID(rawID); err != nil {

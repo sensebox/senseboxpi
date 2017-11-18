@@ -37,6 +37,5 @@ func main() {
 		for _, err := range errs {
 			fmt.Println(err)
 		}
-		log.Fatal("")
 	}
 }

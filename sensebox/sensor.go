@@ -21,6 +21,8 @@ type measurement struct {
 	Timestamp time.Time `json:"createdAt,omitempty"`
 }
 
+// InitializeDevice tries to initialize a new SensorDevice from the sensors
+// SensorType and Phenomenon
 func (s *sensor) InitializeDevice() error {
 	if s.sensorDevice == nil {
 		sensorDevice, err := sensors.NewSensor(s.SensorType, s.Phenomenon)
@@ -32,6 +34,8 @@ func (s *sensor) InitializeDevice() error {
 	return nil
 }
 
+// TakeReading tries to take a reading from the sensors sensorDevice
+// ReadValue(string). Calls InitializeDevice if the sensorDevice is nil
 func (s *sensor) TakeReading() (float64, error) {
 	if s.sensorDevice == nil {
 		err := s.InitializeDevice()
@@ -42,6 +46,8 @@ func (s *sensor) TakeReading() (float64, error) {
 	return s.sensorDevice.ReadValue(s.Phenomenon)
 }
 
+// AddMeasurementReading calls the sensors TakeReading function and adds the
+//result to the sensors measurements through AddMeasurement
 func (s *sensor) AddMeasurementReading() error {
 	reading, err := s.TakeReading()
 	if err != nil {

@@ -31,6 +31,8 @@ func validateID(id string) (err error) {
 	return
 }
 
+// NewFromJSON initializes a new senseBox with sensors and postDomain from given
+// byte array encoded json obtained from for example ioutil.ReadFile
 func NewFromJSON(jsonBytes []byte) (senseBox, error) {
 	var sbx senseBox
 	err := json.Unmarshal(jsonBytes, &sbx)
@@ -41,7 +43,7 @@ func NewFromJSON(jsonBytes []byte) (senseBox, error) {
 	return sbx, nil
 }
 
-// SubmitMeasurements tries to send the measurements of the Sensors of the SenseBox
+// SubmitMeasurements tries to send the measurements of the Sensors of the senseBox
 // to the openSenseMap
 func (s *senseBox) SubmitMeasurements() []error {
 	var measurements []measurement

@@ -7,6 +7,8 @@ import (
 	"github.com/sensebox/senseboxpi/hardware/iio"
 )
 
+// HDC100x wraps the Industrial I/O sensor hdc100x. Selected by sensorType
+// "hdc100x" and phenomenon "temperature" or "humidity"
 type HDC100x struct {
 	device hardware.DeviceI
 }
@@ -21,8 +23,8 @@ func NewHDC100xSensor() (SensorI, error) {
 	return HDC100x{device}, nil
 }
 
-// TemperatureHumidity reads and returns the current temperature in degree celsius
-// and relative humidity in percent
+// TemperatureHumidity reads and returns the current temperature in degree
+// celsius and relative humidity in percent
 func (h HDC100x) TemperatureHumidity() (temperature, humidity float64, err error) {
 	temperature, err = h.Temperature()
 	if err != nil {
@@ -35,7 +37,7 @@ func (h HDC100x) TemperatureHumidity() (temperature, humidity float64, err error
 	return
 }
 
-// HDC100xTemperature reads and returns the current temperature in degrees celsius
+// Temperature reads and returns the current temperature in degrees celsius
 func (h HDC100x) Temperature() (temperature float64, err error) {
 	tempRaw, err := h.device.ReadFloat("in_temp_raw")
 	if err != nil {
@@ -54,7 +56,7 @@ func (h HDC100x) Temperature() (temperature float64, err error) {
 	return
 }
 
-// HDC100x reads and returns the current relative humidity in percent
+// Humidity reads and returns the current relative humidity in percent
 func (h HDC100x) Humidity() (humidity float64, err error) {
 	humiRaw, err := h.device.ReadFloat("in_humidityrelative_raw")
 	if err != nil {
@@ -68,12 +70,14 @@ func (h HDC100x) Humidity() (humidity float64, err error) {
 	return
 }
 
-// Phenomenons returns "temperature" and "humidity" for this sensor
+// Phenomenons returns []string{"temperature", "humidity"} for this sensor
 func (h HDC100x) Phenomenons() []string {
 	return []string{"temperature", "humidity"}
 }
 
-// ReadValue reads and returns the current atmospheric pressure in hPa
+// ReadValue reads and returns the current temperature in degrees celsius for
+// phenomenon "temperature" and the current relative humidity for phenomenon
+// "humidity"
 func (h HDC100x) ReadValue(phenomenon string) (float64, error) {
 	temperature, humidity, err := h.TemperatureHumidity()
 	if err != nil {
@@ -86,5 +90,5 @@ func (h HDC100x) ReadValue(phenomenon string) (float64, error) {
 		return humidity, nil
 	}
 
-	return 0, errors.New("invalid phenomenon")
+	return 0, errors.New("invalid phenomenon " + phenomenon)
 }

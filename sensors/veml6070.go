@@ -1,8 +1,13 @@
 package sensors
 
-import "github.com/sensebox/senseboxpi/hardware/iio"
-import "github.com/sensebox/senseboxpi/hardware"
+import (
+	"errors"
 
+	"github.com/sensebox/senseboxpi/hardware"
+	"github.com/sensebox/senseboxpi/hardware/iio"
+)
+// VEML6070 wraps the Industrial I/O sensor veml6070. Selected by sensorType
+// "veml6070" and phenomenon "uv"
 type VEML6070 struct {
 	device hardware.DeviceI
 }
@@ -17,7 +22,8 @@ func NewVEML6070Sensor() (SensorI, error) {
 	return VEML6070{device}, nil
 }
 
-// VEML6070UV reads and returns the current uv intensity in microWatts per square centimeter
+// UV reads and returns the current uv intensity in microWatts per square
+// centimeter
 func (v VEML6070) UV() (uv float64, err error) {
 	uv, err = v.device.ReadFloat("in_intensity_uv_raw")
 	if err != nil {
@@ -26,11 +32,22 @@ func (v VEML6070) UV() (uv float64, err error) {
 	return
 }
 
+// Phenomenons returns []string{"uv"} for this sensor
 func (v VEML6070) Phenomenons() []string {
 	return []string{"uv"}
 }
 
-// ReadValue reads and returns the current atmospheric pressure in hPa
+// ReadValue reads and returns the current uv intensity in microWatts per square
+// centimeter
 func (v VEML6070) ReadValue(phenomenon string) (float64, error) {
-	return v.UV()
+	if phenomenon != "uv" {
+		return 0, errors.New("invalid phenomenon " + phenomenon)
+	}
+
+	uv, err := v.UV()
+	if err != nil {
+		return 0, err
+	}
+
+	return uv, nil
 }

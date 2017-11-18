@@ -31,6 +31,46 @@ Install [Go](https://golang.org/doc/install), then
 
  `$ go get -u github.com/sensebox/senseboxpi`
 
+## Running
+
+Create a json file called `senseboxpi_config.json` next to the `senseboxpi` binary.
+
+The root keys should be `_id`, `postDomain` with string values and `sensors` as array of objects. Each object in `sensors` has the keys `_id`, `sensorType` and `phenomenon` with string values.
+Here is an example:
+```json
+{
+  "_id": "5912f2f051d3460011f57fdd",
+  "postDomain": "ingress.osem.vo1d.space",
+  "sensors": [
+    {
+      "_id": "5912f2f051d3460011f57fde",
+      "phenomenon": "temperature",
+      "sensorType": "hdc100x"
+    },
+    {
+      "_id": "5912f2f051d3460011f57fdf",
+      "phenomenon": "humidity",
+      "sensorType": "hdc100x"
+    },
+    {
+      "_id": "5912f2f051d3460011f57fe0",
+      "phenomenon": "pressure",
+      "sensorType": "bmp280"
+    },
+    {
+      "_id": "5912f2f051d3460011f57fe1",
+      "phenomenon": "light",
+      "sensorType": "tsl4531"
+    },
+    {
+      "_id": "5912f2f051d3460011f57fe2",
+      "phenomenon": "uv",
+      "sensorType": "veml6070"
+    }
+  ]
+}
+```
+
 ## Supported Sensors
 - BMP280 (Pressure)
 - HDC100x (Temperature and Humidity)
