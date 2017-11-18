@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,8 +9,21 @@ import (
 	"github.com/sensebox/senseboxpi/sensebox"
 )
 
+func readFlags() (configPath string) {
+	const (
+		defaultConfigPath = "senseboxpi_config.json"
+		usage             = "path of the configuration json"
+	)
+	flag.StringVar(&configPath, "config", defaultConfigPath, usage)
+	flag.StringVar(&configPath, "c", defaultConfigPath, usage+" (shorthand)")
+	flag.Parse()
+	return configPath
+}
+
 func main() {
-	configBytes, err := ioutil.ReadFile("config.json")
+	configPath := readFlags()
+
+	configBytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
