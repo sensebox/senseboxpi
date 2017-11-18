@@ -5,19 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/parnurzeal/gorequest"
-)
-
-const (
-	baseURL = "https://api.osem.vo1d.space/boxes/"
 )
 
 type id string
 
 type senseBox struct {
-	ID      id        `json:"_id"`
-	Sensors []*sensor `json:"sensors"`
+	ID         id        `json:"_id"`
+	Sensors    []*sensor `json:"sensors"`
+	PostDomain string    `json:"postDomain"`
 }
 
 func validateID(id string) (err error) {
@@ -52,7 +50,11 @@ func (s *senseBox) SubmitMeasurements() []error {
 		// clear measurements
 		sensor.measurements = nil
 	}
-	resp, body, errs := gorequest.New().Post(baseURL + string(s.ID) + "/data").
+	postURL, err := url.Parse("https://" + s.PostDomain + "/boxes/" + string(s.ID) + "/data")
+	if err != nil {
+		return []error{err}
+	}
+	resp, body, errs := gorequest.New().Post(postURL.String()).
 		Send(measurements).
 		End()
 
