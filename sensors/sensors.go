@@ -18,6 +18,7 @@ var initMap = map[string]fn{
 	"hdc100x":  NewHDC100xSensor,
 	"tsl4531":  NewTSL4531Sensor,
 	"veml6070": NewVEML6070Sensor,
+	"sht3x":    NewSHT3xSensor,
 }
 
 // NewSensor initializes a new SensorDevice from a sensorType and a phenomenon
