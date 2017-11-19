@@ -27,14 +27,7 @@ Check if the iio devices are populated `$ ls /sys/bus/iio/devices/`. If the outp
 
 ## Installation
 
-### Precompiled
-
-#### v1.0.0
-```
-curl -L https://github.com/sensebox/senseboxpi/releases/download/v1.0.0/senseboxpi-v1.0.0 > /tmp/senseboxpi &&
-    chmod +x /tmp/senseboxpi &&
-    sudo cp /tmp/senseboxpi /usr/local/bin/senseboxpi
-```
+Download the latest version from [the releases page](https://github.com/sensebox/senseboxpi/releases)
 
 ### From source
 
@@ -93,8 +86,9 @@ Here is an example:
 ```
 
 ## Supported Sensors
-- BMP280 (Pressure)
-- HDC100x (Temperature and Humidity)
-- TSL4531 (Light intensity)
-- VEML6070 (UV intensity)
+- IIO: BMP280 (Pressure)
+- IIO: HDC100x (Temperature and Humidity)
+- IIO: TSL4531 (Light intensity)
+- IIO: VEML6070 (UV intensity)
+- HWMON: SHT3x (Temperature and Humidity)
 
