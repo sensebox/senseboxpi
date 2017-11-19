@@ -1,11 +1,12 @@
 package sensors
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/sensebox/senseboxpi/hardware"
 	"github.com/sensebox/senseboxpi/hardware/iio"
 )
+
 // VEML6070 wraps the Industrial I/O sensor veml6070. Selected by sensorType
 // "veml6070" and phenomenon "uv"
 type VEML6070 struct {
@@ -41,7 +42,7 @@ func (v VEML6070) Phenomenons() []string {
 // centimeter
 func (v VEML6070) ReadValue(phenomenon string) (float64, error) {
 	if phenomenon != "uv" {
-		return 0, errors.New("invalid phenomenon " + phenomenon)
+		return 0, fmt.Errorf("invalid phenomenon %s", phenomenon)
 	}
 
 	uv, err := v.UV()

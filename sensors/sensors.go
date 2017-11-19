@@ -1,6 +1,6 @@
 package sensors
 
-import "errors"
+import "fmt"
 
 // SensorI defines the methods Sensors should implement
 type SensorI interface {
@@ -35,5 +35,5 @@ func NewSensor(sensorType, phenomenon string) (SensorI, error) {
 		}
 	}
 
-	return nil, errors.New("no hardware for sensorType \"" + sensorType + "\" and phenomenon \"" + phenomenon + "\" found")
+	return nil, fmt.Errorf("no hardware for sensorType \"%s\" and phenomenon \"%s\" found", sensorType, phenomenon)
 }

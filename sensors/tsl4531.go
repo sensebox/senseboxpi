@@ -1,7 +1,7 @@
 package sensors
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/sensebox/senseboxpi/hardware"
 	"github.com/sensebox/senseboxpi/hardware/iio"
@@ -41,7 +41,7 @@ func (t TSL4531) Phenomenons() []string {
 // "light"
 func (t TSL4531) ReadValue(phenomenon string) (float64, error) {
 	if phenomenon != "light" {
-		return 0, errors.New("invalid phenomenon " + phenomenon)
+		return 0, fmt.Errorf("invalid phenomenon %s", phenomenon)
 	}
 
 	lux, err := t.Lux()

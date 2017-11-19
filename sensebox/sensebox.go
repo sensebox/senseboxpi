@@ -3,7 +3,6 @@ package sensebox
 import (
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 
@@ -18,17 +17,17 @@ type senseBox struct {
 	PostDomain string    `json:"postDomain"`
 }
 
-func validateID(id string) (err error) {
+func validateID(id string) error {
 	hex, err := hex.DecodeString(id)
 	if err != nil {
-		return
+		return fmt.Errorf("id \"%s\" is invalid: %s", id, err.Error())
 	}
 
 	if len(hex) != 12 {
-		return errors.New("id must be exactly 24 characters long")
+		return fmt.Errorf("id \"%s\" is invalid: id must be exactly 24 characters long", id)
 	}
 
-	return
+	return nil
 }
 
 // NewFromJSON initializes a new senseBox with sensors and postDomain from given

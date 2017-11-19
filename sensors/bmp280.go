@@ -1,7 +1,7 @@
 package sensors
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/sensebox/senseboxpi/hardware"
 	"github.com/sensebox/senseboxpi/hardware/iio"
@@ -42,7 +42,7 @@ func (b BMP280) Phenomenons() []string {
 // phenomenon "pressure"
 func (b BMP280) ReadValue(phenomenon string) (float64, error) {
 	if phenomenon != "pressure" {
-		return 0, errors.New("invalid phenomenon " + phenomenon)
+		return 0, fmt.Errorf("invalid phenomenon %s", phenomenon)
 	}
 
 	pressure, err := b.Pressure()

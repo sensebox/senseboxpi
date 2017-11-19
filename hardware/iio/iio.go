@@ -1,7 +1,7 @@
 package iio
 
 import (
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -74,5 +74,5 @@ func DeviceByName(name string) (hardware.DeviceI, error) {
 		}
 	}
 
-	return Device{}, errors.New("no iio device with name " + name + "availiable")
+	return Device{}, fmt.Errorf("no iio device with name %s available", name)
 }

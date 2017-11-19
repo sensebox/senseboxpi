@@ -1,7 +1,7 @@
 package sensors
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/sensebox/senseboxpi/hardware"
 	"github.com/sensebox/senseboxpi/hardware/iio"
@@ -90,5 +90,5 @@ func (h HDC100x) ReadValue(phenomenon string) (float64, error) {
 		return humidity, nil
 	}
 
-	return 0, errors.New("invalid phenomenon " + phenomenon)
+	return 0, fmt.Errorf("invalid phenomenon %s", phenomenon)
 }
