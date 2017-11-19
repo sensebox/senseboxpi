@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/sensebox/senseboxpi/sensebox"
 )
+
+const versionStr = "1.0.0-dev"
 
 func readFlags() (configPath string) {
 	const (
@@ -17,6 +20,12 @@ func readFlags() (configPath string) {
 	flag.StringVar(&configPath, "config", defaultConfigPath, usage)
 	flag.StringVar(&configPath, "c", defaultConfigPath, usage+" (shorthand)")
 	flag.Parse()
+
+	if flag.Arg(0) == "version" {
+		fmt.Printf("senseboxpi version %s\nUsage:\n", versionStr)
+		flag.PrintDefaults()
+		os.Exit(0)
+	}
 	return configPath
 }
 
