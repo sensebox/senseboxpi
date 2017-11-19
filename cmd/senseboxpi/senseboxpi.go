@@ -10,7 +10,7 @@ import (
 	"github.com/sensebox/senseboxpi/sensebox"
 )
 
-const versionStr = "1.0.0-dev"
+const versionStr = "1.1.0"
 
 func readFlags() (configPath string) {
 	const (
