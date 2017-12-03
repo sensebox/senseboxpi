@@ -1,10 +1,14 @@
 package sensebox
 
 import (
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
+	"os"
+	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
@@ -12,9 +16,10 @@ import (
 type id string
 
 type senseBox struct {
-	ID         id        `json:"_id"`
-	Sensors    []*sensor `json:"sensors"`
-	PostDomain string    `json:"postDomain"`
+	ID           id        `json:"_id"`
+	Sensors      []*sensor `json:"sensors"`
+	PostDomain   string    `json:"postDomain"`
+	measurements []measurement
 }
 
 func validateID(id string) error {
@@ -45,18 +50,16 @@ func NewFromJSON(jsonBytes []byte) (senseBox, error) {
 // SubmitMeasurements tries to send the measurements of the Sensors of the senseBox
 // to the openSenseMap
 func (s *senseBox) SubmitMeasurements() []error {
-	var measurements []measurement
-	for _, sensor := range s.Sensors {
-		measurements = append(measurements, sensor.measurements...)
-		// clear measurements
-		sensor.measurements = nil
+	if len(s.measurements) == 0 {
+		return []error{errors.New("No measurements. Did you forgot to call ReadSensors?")}
 	}
+
 	postURL, err := url.Parse("https://" + s.PostDomain + "/boxes/" + string(s.ID) + "/data")
 	if err != nil {
 		return []error{err}
 	}
 	resp, body, errs := gorequest.New().Post(postURL.String()).
-		Send(measurements).
+		Send(s.measurements).
 		End()
 
 	if errs != nil {
@@ -68,15 +71,25 @@ func (s *senseBox) SubmitMeasurements() []error {
 	return nil
 }
 
+// ClearMeasurements clears the measurements previously read through ReadSensors
+func (s *senseBox) ClearMeasurements() {
+	s.measurements = make([]measurement, len(s.Sensors))
+}
+
+// ReadSensors reads measurements from all sensors
 func (s *senseBox) ReadSensors() error {
 	for _, sensor := range s.Sensors {
-		if err := sensor.AddMeasurementReading(); err != nil {
+		m, err := sensor.ReadMeasurement()
+		if err != nil {
 			return err
 		}
+		s.measurements = append(s.measurements, m)
 	}
 	return nil
 }
 
+// ReadSensorsAndSubmitMeasurements takes readings from all sensors and submits
+// these measurements through calling SubmitMeasurements
 func (s *senseBox) ReadSensorsAndSubmitMeasurements() []error {
 	err := s.ReadSensors()
 	if err != nil {
@@ -84,4 +97,31 @@ func (s *senseBox) ReadSensorsAndSubmitMeasurements() []error {
 	}
 
 	return s.SubmitMeasurements()
+}
+
+func (s *senseBox) AppendCSV(path string) error {
+	if len(s.measurements) == 0 {
+		return errors.New("No measurements. Did you forgot to call ReadSensors?")
+	}
+
+	// If the file doesn't exist, create it, or append to the file
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	writer := csv.NewWriter(f)
+	defer writer.Flush()
+
+	// csv-stringify the measurements
+	for _, measurement := range s.measurements {
+		m := []string{measurement.Sensor.ID.String(), measurement.Value.String(), measurement.Timestamp.Format(time.RFC3339)}
+		writer.Write(m)
+	}
+
+	if err := writer.Error(); err != nil {
+		return err
+	}
+	return nil
 }

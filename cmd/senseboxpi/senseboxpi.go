@@ -38,7 +38,7 @@ func readFlags() (configPath, csvOutputPath string, offline bool) {
 }
 
 func main() {
-	configPath, _, offline := readFlags()
+	configPath, csvOutputPath, offline := readFlags()
 
 	configBytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -54,6 +54,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if csvOutputPath != "" {
+		err := senseBox.AppendCSV(csvOutputPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	if offline == false {
 		errs := senseBox.SubmitMeasurements()
 		if errs != nil {
@@ -62,4 +69,5 @@ func main() {
 			}
 		}
 	}
+	senseBox.ClearMeasurements()
 }

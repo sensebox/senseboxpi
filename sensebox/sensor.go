@@ -11,7 +11,6 @@ type sensor struct {
 	ID           id     `json:"_id"`
 	Phenomenon   string `json:"phenomenon"`
 	SensorType   string `json:"sensorType"`
-	measurements []measurement
 	sensorDevice sensors.SensorI
 }
 
@@ -46,18 +45,11 @@ func (s *sensor) TakeReading() (float64, error) {
 	return s.sensorDevice.ReadValue(s.Phenomenon)
 }
 
-// AddMeasurementReading calls the sensors TakeReading function and adds the
-//result to the sensors measurements through AddMeasurement
-func (s *sensor) AddMeasurementReading() error {
+// ReadMeasurement calls the sensors TakeReading function and returns a measurement
+func (s *sensor) ReadMeasurement() (measurement, error) {
 	reading, err := s.TakeReading()
 	if err != nil {
-		return err
+		return measurement{}, err
 	}
-	s.AddMeasurement(reading, time.Now())
-	return nil
-}
-
-// AddMeasurement adds a new measurement to the Sensor
-func (s *sensor) AddMeasurement(value float64, timestamp time.Time) {
-	s.measurements = append(s.measurements, measurement{s, number(value), timestamp.UTC()})
+	return measurement{s, number(reading), time.Now().UTC()}, nil
 }
