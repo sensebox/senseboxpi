@@ -12,13 +12,21 @@ import (
 
 const versionStr = "1.1.0"
 
-func readFlags() (configPath string) {
+func readFlags() (configPath, csvOutputPath string, offline bool) {
 	const (
 		defaultConfigPath = "senseboxpi_config.json"
-		usage             = "path of the configuration json"
+		configUsage       = "path of the configuration json"
+		offlineUsage      = "operate offline. Do not upload to server"
+		csvOutputUsage    = "path to file where measurements in csv format will be appended"
 	)
-	flag.StringVar(&configPath, "config", defaultConfigPath, usage)
-	flag.StringVar(&configPath, "c", defaultConfigPath, usage+" (shorthand)")
+	// config flag
+	flag.StringVar(&configPath, "config", defaultConfigPath, configUsage)
+	flag.StringVar(&configPath, "c", defaultConfigPath, configUsage+" (shorthand)")
+	// offline flag
+	flag.BoolVar(&offline, "offline", false, offlineUsage)
+	// csv output path flag
+	flag.StringVar(&csvOutputPath, "csv-output", "", csvOutputUsage)
+
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
@@ -26,11 +34,11 @@ func readFlags() (configPath string) {
 		flag.PrintDefaults()
 		os.Exit(0)
 	}
-	return configPath
+	return configPath, csvOutputPath, offline
 }
 
 func main() {
-	configPath := readFlags()
+	configPath, _, _ := readFlags()
 
 	configBytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
