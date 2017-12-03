@@ -68,11 +68,19 @@ func (s *senseBox) SubmitMeasurements() []error {
 	return nil
 }
 
-func (s *senseBox) ReadSensorsAndSubmitMeasurements() []error {
+func (s *senseBox) ReadSensors() error {
 	for _, sensor := range s.Sensors {
 		if err := sensor.AddMeasurementReading(); err != nil {
-			return []error{err}
+			return err
 		}
+	}
+	return nil
+}
+
+func (s *senseBox) ReadSensorsAndSubmitMeasurements() []error {
+	err := s.ReadSensors()
+	if err != nil {
+		return []error{err}
 	}
 
 	return s.SubmitMeasurements()
