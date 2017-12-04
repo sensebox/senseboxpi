@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
@@ -116,7 +115,7 @@ func (s *senseBox) AppendCSV(path string) error {
 
 	// csv-stringify the measurements
 	for _, measurement := range s.measurements {
-		m := []string{measurement.Sensor.ID.String(), measurement.Value.String(), measurement.Timestamp.Format(time.RFC3339)}
+		m := []string{measurement.Sensor.ID.String(), measurement.Value.String(), measurement.Timestamp.Format("2006-01-02T15:04:05.000Z07:00")}
 		writer.Write(m)
 	}
 
